@@ -125,6 +125,7 @@ def status(submission_id=None):
                 }), 200
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+driver.get('https://mirror.codeforces.com/') # preload as a test
 app.run()
 
 
