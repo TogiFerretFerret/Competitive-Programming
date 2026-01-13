@@ -1,8 +1,8 @@
-// Problem: $(PROBLEM)
-// Judge: $(JUDGE)
-// URL: $(URL)
-// Memory Limit: $(MEMLIM) MB
-// Time Limit: $(TIMELIM) ms
+// Problem: A. Social Experiment
+// Judge: Codeforces
+// URL: https://codeforces.com/contest/2184/problem/A
+// Memory Limit: 256 MB
+// Time Limit: 1000 ms
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
@@ -35,9 +35,12 @@ template<typename TM>
 using tensor=vector<matrix<TM>>;
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
-#define MULTITEST false
+#define MULTITEST true
 void solve(){
-	
+	int n;cin>>n;
+	// each civ made out of some number of teams of 2 or 3, we want to minimize difference in civ size between the two civs
+	// if n=2 or n=3, answer is n, otherwise it should be n%2 (divide equally into teams of 2 if even, otherwise one team of three)
+	out((n<4)?n:n%2);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);

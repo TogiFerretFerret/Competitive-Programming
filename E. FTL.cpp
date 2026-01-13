@@ -23,7 +23,6 @@ struct CHASH {
     }
 };
 // Check if the compiler supports __int128 before defining the alias
-using longer_long = __int128; // <- meme, never has any CP problem ever required this
 template<typename T1,typename T2>
 using hashmap=unordered_map<T1,T2,CHASH>;
 template<typename TM>
