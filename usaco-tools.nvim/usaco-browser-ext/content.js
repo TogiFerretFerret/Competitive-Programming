@@ -51,8 +51,39 @@
             // 2. Download Zip (in content script to share session/cookies)
             const response = await fetch(link.href);
             if (!response.ok) throw new Error("Failed to download zip: " + response.status);
-            const arrayBuffer = await response.arrayBuffer();
+
+            const contentLength = response.headers.get('content-length');
+            const total = contentLength ? parseInt(contentLength, 10) : 0;
+            let loaded = 0;
+
+            const reader = response.body.getReader();
+            const chunks = [];
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                
+                chunks.push(value);
+                loaded += value.length;
+
+                if (total) {
+                    const percent = Math.round((loaded / total) * 100);
+                    button.textContent = `${percent}%`;
+                    button.style.background = `linear-gradient(to right, #218838 ${percent}%, #28a745 ${percent}%)`;
+                } else {
+                    button.textContent = `DL: ${(loaded / 1024).toFixed(0)}KB`;
+                }
+            }
+
+            // Reconstruct full buffer
+            const arrayBuffer = new Uint8Array(loaded);
+            let position = 0;
+            for (const chunk of chunks) {
+                arrayBuffer.set(chunk, position);
+                position += chunk.length;
+            }
             
+            button.style.background = "#28a745"; // Reset background
             button.textContent = "Sending...";
 
             // 3. Send to Background Script
@@ -60,7 +91,7 @@
             const res = await browser.runtime.sendMessage({
                 type: 'submit',
                 name: problemName,
-                zipBuffer: Array.from(new Uint8Array(arrayBuffer)) // Serialize as standard array to be safe
+                zipBuffer: Array.from(arrayBuffer) // Serialize as standard array to be safe
             });
 
             if (res && res.success) {

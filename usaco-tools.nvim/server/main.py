@@ -59,6 +59,14 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-Problem-Name')
         self.end_headers()
 
+    def log_message(self, format, *args):
+        # Redirect access logs to stdout so they aren't caught as "Server Error" by the plugin
+        import sys
+        sys.stdout.write("%s - - [%s] %s\n" %
+                         (self.client_address[0],
+                          self.log_date_time_string(),
+                          format % args))
+
     def process_submission(self, name, zip_bytes):
         print(f"Processing: {name}")
         
