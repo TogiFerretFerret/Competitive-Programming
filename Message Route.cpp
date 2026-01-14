@@ -1,8 +1,8 @@
-// Problem: $(PROBLEM)
-// Judge: $(JUDGE)
-// URL: $(URL)
-// Memory Limit: $(MEMLIM) MB
-// Time Limit: $(TIMELIM) ms
+// Problem: Message Route
+// Judge: CSES
+// URL: https://cses.fi/problemset/task/1667
+// Memory Limit: 512 MB
+// Time Limit: 1000 ms
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
@@ -41,10 +41,34 @@ template<typename TM,typename... Args> auto make(size_t first,Args... args){
 }	
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
-#define MULTITEST false
 #define pb push_back
+#define MULTITEST false
 void solve(){
-	
+	int n,m;in(n,m);
+	vector<int> dist(n+1,INT_MAX),parent(n+1);
+	matrix<int> adj(n+1);
+	while(m--){int a,b;in(a,b);adj[a].push_back(b);adj[b].push_back(a);}
+	queue<int> q;dist[1]=0;
+	q.push(1);
+	while(!q.empty()){
+		int x=q.front();
+		q.pop();
+		for(int t:adj[x])
+			if(dist[t]==INT_MAX){
+				dist[t]=dist[x]+1;
+				parent[t]=x;
+				q.push(t);
+			}
+	}
+	if(dist[n]==INT_MAX){
+		out("IMPOSSIBLE");
+		return;
+	}
+	out(dist[n]+1);
+	vector<int> v{n};
+	while(v.back()!=1)v.push_back(parent[v.back()]);
+	reverse(all(v));
+	out(v);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);

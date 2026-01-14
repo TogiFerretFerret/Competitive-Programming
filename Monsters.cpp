@@ -1,8 +1,8 @@
-// Problem: $(PROBLEM)
-// Judge: $(JUDGE)
-// URL: $(URL)
-// Memory Limit: $(MEMLIM) MB
-// Time Limit: $(TIMELIM) ms
+// Problem: Monsters
+// Judge: CSES
+// URL: https://cses.fi/problemset/task/1194
+// Memory Limit: 512 MB
+// Time Limit: 1000 ms
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
@@ -42,7 +42,6 @@ template<typename TM,typename... Args> auto make(size_t first,Args... args){
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
 #define MULTITEST false
-#define pb push_back
 void solve(){
 	
 }
