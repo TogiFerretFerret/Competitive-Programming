@@ -32,19 +32,51 @@ template<typename T1,typename T2> using hashmap=unordered_map<T1,T2,CHASH>;
 template<typename TM> using matrix=vector<vector<TM>>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
-template<typename TM,typename... Args> auto make(size_t first,Args... args){
-	if constexpr(sizeof...(args)==0){
-		return vector<TM>(first);
+template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
+	if constexpr(sizeof...(args) == 0){
+		return vector<TM>(first, Val);
 	} else {
-		return vector<decltype(make<TM>(args...))>(first,make<TM>(args...));
+		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
 	}
-}	
+}
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
 #define MULTITEST false
 #define pb push_back
 void solve(){
-	
+	function<void(int&)> cr = [&](int& x){
+		const int MOD = 1000000007;
+		if(x<0)x+=MOD;
+		if(x>=MOD)x-=MOD;
+	};
+	int n,m;in(n,m);
+	tensor<int> dp=make<int,0>(2e3+3,2e3+3,2);
+	vector<int> rt(2e3+3);
+	vector<int> lt(2e3+3);
+	vector<string> s(n);in(s);
+	function<bool(int,int)> rk = [&] (int i,int j) -> bool {
+		if(i>n||j>m)return false;
+		return s[i-1][j-1]=='R';
+	};
+	dp[n][m][0]=dp[n][m][1]=1;
+	for(int j=m;j>=0;--j)lt[j]=n;
+	for(int i=n;i>0;--i){
+		int rs=0,c=m;
+		for(int j=m;j>0;--j){
+			if(i<n||j<m){
+				dp[i][j][0]=rt[j];
+				dp[i][j][1]=rs;
+			}
+			rt[j]+=dp[i][j][1],cr(rt[j]);
+			rs+=dp[i][j][0],cr(rs);
+			if(rk(i,j)){
+				rt[j]-=dp[lt[j]][j][1],cr(rt[j]),lt[j]--;
+				rs-=dp[i][c][0],cr(rs),c--;
+			}
+		}
+	}
+	if(n*m>1)dp[1][1][0]+=dp[1][1][1],cr(dp[1][1][0]);
+	out(dp[1][1][0]);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);

@@ -32,13 +32,13 @@ template<typename T1,typename T2> using hashmap=unordered_map<T1,T2,CHASH>;
 template<typename TM> using matrix=vector<vector<TM>>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
-template<typename TM,typename... Args> auto make(size_t first,Args... args){
-	if constexpr(sizeof...(args)==0){
-		return vector<TM>(first);
+template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
+	if constexpr(sizeof...(args) == 0){
+		return vector<TM>(first, Val);
 	} else {
-		return vector<decltype(make<TM>(args...))>(first,make<TM>(args...));
+		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
 	}
-}	
+}
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
 #define MULTITEST false
