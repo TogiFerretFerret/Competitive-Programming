@@ -76,7 +76,7 @@ void solve(){
 	};
 	int ans=0,cmn=0;
 	function<void(int,int,int,int,int)> findInter=[&](int v, int l, int r, int lq, int rq)->void {
-		if (rq <= l || r <= lq || ans != (int) 1e6) return;
+		if (rq <= l || r <= lq || ans != INT_MAX) return;
 		if (lq <= l && r <= rq && min(cmn, st[v]) > r - lq - 1) {
 			cmn = min(cmn, st[v]);
 			return;
