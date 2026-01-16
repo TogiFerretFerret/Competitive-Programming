@@ -45,7 +45,28 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 #define MULTITEST false
 #define pb push_back
 void solve(){
-	
+	int n; in(n);
+	graph adj = graph(n);
+	forn(i,n-1){
+		int a,b;in(a,b);
+		--a;--b;
+		adj[a].pb(b);adj[b].pb(a); // tree
+	}
+	// A matching is a set of edges where each node is an endpoint of at most one edge. What is the maximum number of edges in a matching?
+	// match leaf nodes with their one adjacent node as much as we can.
+	// greedy+dfs
+	vector<bool> done(n,false);
+	int ans=0;
+	function<void(int,int)> dfs=[&](int u, int v)->void{
+		for (int i : adj[v]) {
+			if (i != u) {
+				dfs(v, i);
+				if(!done[i]&&!done[v])done[v]=done[i]=1,++ans;
+			}
+		}
+	};
+	dfs(0,0);
+	out(ans);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);
