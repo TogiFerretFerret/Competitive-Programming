@@ -1,8 +1,8 @@
-// Problem: $(PROBLEM)
-// Judge: $(JUDGE)
-// URL: $(URL)
-// Memory Limit: $(MEMLIM) MB
-// Time Limit: $(TIMELIM) ms
+// Problem: Tree Matching
+// Judge: CSES
+// URL: https://cses.fi/problemset/task/1130
+// Memory Limit: 512 MB
+// Time Limit: 1000 ms
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
