@@ -45,7 +45,7 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 #define MULTITEST false
 #define pb push_back
 void solve(){
-	
+
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);
