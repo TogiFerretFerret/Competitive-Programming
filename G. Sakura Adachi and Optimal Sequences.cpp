@@ -46,14 +46,48 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
+//////////////////////////////////////////////////////////////////////////////
+const ll mod=1e6+3;vector<ll> fact(mod);
+void presolve(){
+	fact[0]=1;
+	forn(i,mod)fact[i+1]=fact[i]*(i+1)%mod;
+}
 void solve(){
-	
+	function<ll(ll)> modinv = [&](ll a)->ll{
+		return a<=1?a:mod-mod/a*modinv(mod%a)%mod; // mod mod mod mod mod mod mod i'm invincible by ado drums to not sound garbage plzz on spotify
+	};
+	ll n,x,ans=1;in(n);vector<ll> a(n),b(n);
+	in(a,b);
+	ll k = __lg(b[0] / a[0]);
+    for(ll i=1; i<n; i++)
+		k = min(k, __lg(b[i] / a[i]));
+    x = k;
+    vector<ll> cnt(k), c(n);
+    for(ll i=0; i<n; i++){
+        for(ll j=0; j<k; j++){
+            cnt[j] += b[i] & 1;
+            b[i] >>= 1;
+        }
+        c[i] = b[i] - a[i];
+    }
+    for(ll j=0; j<k; j++){
+        x += cnt[j];
+        ans = ans * fact[cnt[j]] % mod;
+    }
+    ll last = accumulate(c.begin(), c.end(), 0LL);
+    ans = (last < mod ? ans * fact[last] % mod : 0);
+    for(ll i : c){
+        x += i;
+        ans = ans * modinv(fact[i]) % mod;
+    }
+	out(x, ans);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);
 	int t=1;
+	presolve();
 	if (MULTITEST) cin>>t;
 	forn(i,t)solve();
 }
