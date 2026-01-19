@@ -40,12 +40,14 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
 	}
 }
+// the summer you were there
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+	int n;in(n);
+	out(n%2==0?(n/4+1):0);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);
