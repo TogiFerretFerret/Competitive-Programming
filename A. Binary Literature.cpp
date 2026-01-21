@@ -1,8 +1,6 @@
-// Problem: D. Equal Binary Subsequences
+// Problem: A. Binary Literature
 // Judge: Codeforces
-// URL: https://codeforces.com/problemset/problem/1736/D
-// Memory Limit: 256 MB
-// Time Limit: 1000 ms
+// URL: https://codeforces.com/contest/1508/problem/A
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
@@ -42,16 +40,58 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
+
 void solve(){
+	int n;
+	if (!(cin >> n)) return;
 	
+	vector<string> s(3);
+	in(s);
+	
+	vector<int> majType(3);
+	forn(i, 3) {
+		int cnt0 = 0;
+		forn(j, 2 * n) {
+			if (s[i][j] == '0') cnt0++;
+		}
+		majType[i] = (cnt0 >= n ? 0 : 1);
+	}
+	
+	int id1 = -1, id2 = -1;
+	if (majType[0] == majType[1]) { id1 = 0; id2 = 1; }
+	else if (majType[0] == majType[2]) { id1 = 0; id2 = 2; }
+	else { id1 = 1; id2 = 2; }
+	
+	char val = (majType[id1] == 0 ? '0' : '1');
+	
+	string ans = "";
+	int p1 = 0, p2 = 0;
+	
+	auto can_p1 = function<bool()>( [&]() -> bool { return p1 < 2 * n; } );
+	auto can_p2 = function<bool()>( [&]() -> bool { return p2 < 2 * n; } );
+	
+	while (can_p1() && can_p2()) {
+		if (s[id1][p1] != val) {
+			ans.pb(s[id1][p1++]);
+		} else if (s[id2][p2] != val) {
+			ans.pb(s[id2][p2++]);
+		} else {
+			ans.pb(val);
+			p1++; p2++;
+		}
+	}
+	
+	while (can_p1()) ans.pb(s[id1][p1++]);
+	while (can_p2()) ans.pb(s[id2][p2++]);
+	
+	out(ans);
 }
+
 int main(){
 	cin.tie(0)->sync_with_stdio(0);
 	int t=1;
 	if (MULTITEST) cin>>t;
 	forn(i,t)solve();
 }
-
-

@@ -1,6 +1,6 @@
-// Problem: D. Count GCD
+// Problem: D. Swap Pass
 // Judge: Codeforces
-// URL: https://codeforces.com/problemset/problem/1750/D
+// URL: https://codeforces.com/contest/1508/problem/D
 // Memory Limit: 256 MB
 // Time Limit: 2000 ms
 #include <bits/stdc++.h>
