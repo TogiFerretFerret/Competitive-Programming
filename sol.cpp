@@ -1,107 +1,92 @@
-/**
- * Problem: A. Binary Literature
- * Solution approach:
- * 1.  We are given three binary strings of length 2n.
- * 2.  A valid answer is a string of length at most 3n containing at least two of the input strings as subsequences.
- * 3.  According to the Pigeonhole Principle, among the three strings, at least two must have the same "majority" character.
- *     - If count('0') >= n, '0' is the majority.
- *     - If count('1') >= n, '1' is the majority.
- *     - With only two possible majority types ('0' or '1') and three strings, at least two collide.
- * 4.  Let the two chosen strings be S1 and S2, and their common majority character be 'C'.
- *     Both S1 and S2 contain at least n occurrences of 'C'.
- * 5.  We can construct a common supersequence by greedily traversing S1 and S2.
- *     - If the current character of S1 is NOT 'C', add it to result.
- *     - Else if the current character of S2 is NOT 'C', add it to result.
- *     - If both are 'C', add 'C' and advance both pointers.
- *     - If one string finishes, append the remainder of the other.
- * 6.  Proof of validity:
- *     - This algorithm constructs a valid supersequence for S1 and S2.
- *     - Every time we match 'C' in both strings, we "save" 1 character of length compared to simple concatenation.
- *     - Since both have >= n occurrences of 'C', we will have at least n matches.
- *     - Maximum length = length(S1) + length(S2) - matches = 2n + 2n - matches <= 4n - n = 3n.
- *     - This fits the constraints.
- */
-
 #include <iostream>
 #include <vector>
-#include <string>
+#include <algorithm>
+#include <cmath>
 
 using namespace std;
 
+typedef long long ll;
+
 void solve() {
     int n;
-    if (!(cin >> n)) return;
-    
-    // Read the three strings
-    string s[3];
-    int majType[3]; // 0 represents majority '0', 1 represents majority '1'
-    
-    for (int i = 0; i < 3; ++i) {
-        cin >> s[i];
-        int count0 = 0;
-        for (char c : s[i]) {
-            if (c == '0') count0++;
-        }
-        // If '0' appears n or more times, majority is '0'
-        if (count0 >= n) majType[i] = 0;
-        // Otherwise, '1' must appear n or more times (since total len is 2n)
-        else majType[i] = 1;
-    }
-    
-    int id1 = -1, id2 = -1;
-    char val = ' ';
-    
-    // Find any two strings with the same majority type (Pigeonhole principle guarantees existence)
-    if (majType[0] == majType[1]) {
-        id1 = 0; id2 = 1;
-    } else if (majType[0] == majType[2]) {
-        id1 = 0; id2 = 2;
-    } else {
-        id1 = 1; id2 = 2;
-    }
-    
-    // Set the matching character
-    val = (majType[id1] == 0 ? '0' : '1');
-    
-    const string& S1 = s[id1];
-    const string& S2 = s[id2];
-    
-    string ans;
-    // We expect length roughly around 3n
-    ans.reserve(3 * n);
-    
-    int p1 = 0, p2 = 0;
-    while (p1 < 2 * n && p2 < 2 * n) {
-        // Greedy strategy:
-        // Prioritize characters that differ from the common majority value 'val'.
-        // If we see a character != val, it means it's the "minority" chunks 
-        // between the 'val' markers. We output them to preserve subsequence order.
-        
-        if (S1[p1] != val) {
-            ans.push_back(S1[p1++]);
-        } else if (S2[p2] != val) {
-            ans.push_back(S2[p2++]);
-        } else {
-            // Both pointers are at the common majority character 'val'.
-            // We consume 'val' from both strings simultaneously (merge).
-            ans.push_back(val);
-            p1++;
-            p2++;
+    ll k;
+    if (!(cin >> n >> k)) return;
+
+    // Check if a k-th permutation exists. 
+    // Total count is 2^(n-1). 
+    // Only need to check if n is small enough that overflow matters.
+    if (n < 62) {
+        if (k > (1LL << (n - 1))) {
+            cout << "-1\n";
+            return;
         }
     }
-    
-    // Append any remaining suffixes
-    while (p1 < 2 * n) ans.push_back(S1[p1++]);
-    while (p2 < 2 * n) ans.push_back(S2[p2++]);
-    
-    cout << ans << "\n";
+
+    // Determine R: the size of the suffix where decisions matter.
+    // For the prefix n - R, we will always choose block size 1 (i.e., just print sequentially)
+    // because the count of permutations for any L=1 choice (2^(big)) is > k.
+    // Minimal R such that 2^(R-1) >= k is sufficient.
+    int R = 1;
+    for (; R <= 61 && R <= n; ++R) {
+        if ((1LL << (R - 1)) >= k) {
+            break;
+        }
+    }
+    // Just in case loop finishes without break (unlikely with k <= 10^18 but safe for boundary)
+    // Or if loop broke, R is set correctly. 
+    // Boundary constraint: R can't exceed n.
+    if (R > n) R = n;
+
+    // Print the deterministic prefix
+    // For indices corresponding to these positions, we always pick L=1 block
+    ll current_val = 1;
+    for (int i = 0; i < n - R; ++i) {
+        cout << current_val << " ";
+        current_val++;
+    }
+
+    // Solve for the suffix of size m = R
+    int m = R;
+    while (m > 0) {
+        // Try block sizes len = 1 to m
+        for (int len = 1; len <= m; ++len) {
+            int rem = m - len; // remaining size after this block
+            ll count = 1;      // Default count for rem=0
+            
+            if (rem > 0) {
+                // If rem is large enough, count exceeds k easily.
+                // 60 is safe ceiling since k <= 10^18 < 2^60
+                if (rem >= 60) {
+                    count = k + 1; // Saturated, guaranteed to be > k
+                } else {
+                    count = (1LL << (rem - 1));
+                }
+            }
+
+            // If k is within the range of this block size choice
+            if (k <= count) {
+                // Output the block: decreases from (current + len - 1) down to current
+                for (int i = 0; i < len; ++i) {
+                    cout << (current_val + len - 1 - i) << " ";
+                }
+                current_val += len;
+                m -= len;
+                // Break out of inner 'for' loop to process the next block in 'while' loop
+                break; 
+            } else {
+                // Skip this block size choice and look for larger initial blocks
+                k -= count;
+            }
+        }
+    }
+    cout << "\n";
 }
 
 int main() {
     // Fast I/O
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
-    
+
     int t;
     if (cin >> t) {
         while (t--) {

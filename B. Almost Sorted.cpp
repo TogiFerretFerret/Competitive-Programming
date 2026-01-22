@@ -42,10 +42,43 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+	ll n, k;
+	in(n, k);
+
+	function<ll(ll)> get_count = [&](ll rem) -> ll {
+		if (rem <= 0) return 1;
+		if (rem >= 61) return 2000000000000000000LL;
+		return 1LL << (rem - 1);
+	};
+
+	if (k > get_count(n)) {
+		out("-1");
+		return;
+	}
+
+	vector<ll> ans;
+	ll cur = 1;
+	ll rem_n = n;
+	while (rem_n > 0) {
+		forn(L_m1, (int)rem_n) {
+			ll L = L_m1 + 1;
+			ll count = get_count(rem_n - L);
+			if (k <= count) {
+				forn(j, (int)L) {
+					ans.pb(cur + L - 1 - j);
+				}
+				cur += L;
+				rem_n -= L;
+				break;
+			} else {
+				k -= count;
+			}
+		}
+	}
+	out(ans);
 }
 int main(){
 	cin.tie(0)->sync_with_stdio(0);
