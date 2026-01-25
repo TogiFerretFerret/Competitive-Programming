@@ -31,11 +31,11 @@ using graph=matrix<int>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
 template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
-	if constexpr(sizeof...(args) == 0){
-		return vector<TM>(first, Val);
-	} else {
-		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
-	}
+    if constexpr(sizeof...(args) == 0){
+        return vector<TM>(first, Val);
+    } else {
+        return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
+    }
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
@@ -55,22 +55,68 @@ m1(out) { cout << forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//softmod f
 m1(debug) { cerr << forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
+
 void solve(){
-	
+    ll n, c;
+    in(n, c);
+    string s;
+    in(s);
+
+    // According to editorial, if w1=0 or wn=0, no suitable p.
+    // This implies count is 0. Since 0 is divisible by c (assuming we are checking count % c == 0),
+    // the problem asks to output -1 if divisible.
+    if(s[0] == '0' || s.back() == '0') {
+        out(-1);
+        return;
+    }
+
+    ll ans = 1;
+    ll rem_c = c;
+    const ll MOD = 998244353;
+
+    // Loop for k from 1 to n-1. 
+    // This corresponds to string indices 0 to n-2.
+    // s[k-1] corresponds to w_k (MEX k).
+    // Note: s[0] is w_1. s[n-1] is w_n.
+    // The loop iterates the process of inserting numbers 1..n-1.
+    for(int k = 1; k < n; ++k) {
+        ll term = 0;
+        // Check s[k-1] which corresponds to condition for MEX k
+        if(s[k - 1] == '1') {
+            term = 2;
+        } else {
+            // If w_k = 0, we must insert k in the middle of 0..k-1
+            // Available spots were k+1, minus 2 ends = k-1 spots.
+            term = k - 1;
+        }
+
+        // Divisibility check logic: reduce rem_c by gcd
+        ll g = std::gcd(term, rem_c);
+        rem_c /= g;
+
+        // Modulo arithmetic for the answer
+        ans = (ans * term) % MOD;
+    }
+
+    if(rem_c == 1) {
+        // If rem_c reduced to 1, the total count was divisible by c
+        out(-1);
+    } else {
+        out(ans);
+    }
 }
+
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
+    #ifndef LOCAL_JUDGE
+    #if FILEMODE
+    freopen(FILENAME".in","r",stdin);
+    freopen(FILENAME".out","w",stdout);
+    #endif
+    #endif
+    int t=1;
+    if (MULTITEST) cin>>t;
+    forn(i,t)solve();
 }
-
-
