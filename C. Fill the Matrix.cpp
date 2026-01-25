@@ -31,11 +31,11 @@ using graph=matrix<int>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
 template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
-	if constexpr(sizeof...(args) == 0){
-		return vector<TM>(first, Val);
-	} else {
-		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
-	}
+    if constexpr(sizeof...(args) == 0){
+        return vector<TM>(first, Val);
+    } else {
+        return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
+    }
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
@@ -55,22 +55,74 @@ m1(out) { cout << forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//softmod f
 m1(debug) { cerr << forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+    int n;
+    in(n);
+    vector<int> a(n);
+    in(a);
+    ll m;
+    in(m);
+
+    vector<int> h(n);
+    forn(i, n) {
+        h[i] = n - a[i];
+    }
+
+    vector<pair<int, int>> segments;
+    stack<pair<int, int>> st;
+
+    h.pb(0);
+
+    forn(i, n + 1) {
+        int width = 0;
+        while (!st.empty() && st.top().first >= h[i]) {
+            int top_h = st.top().first;
+            int top_w = st.top().second;
+            st.pop();
+            
+            width += top_w;
+            
+            int below_h = st.empty() ? 0 : st.top().first;
+            int segment_height = top_h - max(h[i], below_h);
+            
+            if (segment_height > 0) {
+                segments.pb({width, segment_height});
+            }
+        }
+        st.push({h[i], width + 1});
+    }
+
+    sort(segments.rbegin(), segments.rend());
+
+    ll beauty = 0;
+    for (pair<int, int>& p : segments) {
+        if (m <= 0) break;
+        ll w = p.first;
+        ll cnt = p.second;
+        
+        ll take_cnt = min((ll)cnt, m / w);
+        beauty += take_cnt * (w - 1);
+        m -= take_cnt * w;
+        
+        if (m > 0 && take_cnt < cnt) {
+            if (w > 1) beauty += (m - 1);
+            m = 0;
+        }
+    }
+
+    out(beauty);
 }
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
+    #ifndef LOCAL_JUDGE
+    #if FILEMODE
+    freopen(FILENAME".in","r",stdin);
+    freopen(FILENAME".out","w",stdout);
+    #endif
+    #endif
+    int t=1;
+    if (MULTITEST) cin>>t;
+    forn(i,t)solve();
 }
-
-
