@@ -31,11 +31,11 @@ using graph=matrix<int>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
 template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
-	if constexpr(sizeof...(args) == 0){
-		return vector<TM>(first, Val);
-	} else {
-		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
-	}
+    if constexpr(sizeof...(args) == 0){
+        return vector<TM>(first, Val);
+    } else {
+        return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
+    }
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
@@ -55,22 +55,69 @@ m1(out) { cout << forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//softmod f
 m1(debug) { cerr << forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+    int n;
+    in(n);
+    vector<int> a(n);
+    in(a);
+
+    matrix<int> dp = make<int, -1>(n + 2, n);
+
+    forn(i, n) {
+        int c = (i > 0 ? 1 : 0);
+        dp[c][i] = 1;
+
+        forn(p, i) {
+            if (a[p] < a[i]) {
+                int gap_cost = (i == p + 1 ? 0 : 1);
+                
+                forn(k, n + 1) {
+                    if (dp[k][p] != -1) {
+                        int nk = k + gap_cost;
+                        if (nk <= n) {
+                            dp[nk][i] = max(dp[nk][i], dp[k][p] + 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    vector<int> best_len(n + 1, 0);
+
+    forn(i, n) {
+        int right_cost = (i < n - 1 ? 1 : 0);
+        forn(k, n + 1) {
+            if (dp[k][i] != -1) {
+                int total_zeros = k + right_cost;
+                if (total_zeros <= n) {
+                    best_len[total_zeros] = max(best_len[total_zeros], dp[k][i]);
+                }
+            }
+        }
+    }
+
+    fOrn(k, 1, n + 1) {
+        best_len[k] = max(best_len[k], best_len[k - 1]);
+    }
+
+    vector<int> ans;
+    fOrn(k, 1, n + 1) {
+        ans.pb(n - best_len[k]);
+    }
+    out(ans);
 }
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
+    #ifndef LOCAL_JUDGE
+    #if FILEMODE
+    freopen(FILENAME".in","r",stdin);
+    freopen(FILENAME".out","w",stdout);
+    #endif
+    #endif
+    int t=1;
+    if (MULTITEST) cin>>t;
+    forn(i,t)solve();
 }
-
-
