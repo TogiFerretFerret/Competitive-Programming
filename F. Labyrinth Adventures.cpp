@@ -24,7 +24,7 @@ template<class T, class U> ostream& operator<<(ostream& o, const pair<T, U>& p) 
 template<class T> istream& operator>>(istream& i, vector<T>& v) { for(auto& x : v) i >> x; return i; }
 template<class T> ostream& operator<<(ostream& o, const vector<T>& v) { for(int i=0; i<v.size(); ++i) o << v[i] << (i==v.size()-1?"":" "); return o; }
 #define m1(x) template<class T, class... U> void x(T&& a, U&&... b)
-#define m2(x) (int[]){(x forward<U>(b),0)...}
+#define m2(x) (int[]){(x std::forward<U>(b),0)...}
 template<typename T1,typename T2> using hashmap=unordered_map<T1,T2,CHASH>;
 template<typename TM> using matrix=vector<vector<TM>>;
 using graph=matrix<int>;
@@ -53,12 +53,13 @@ m1(in) { cin >> forward<T>(a); m2(cin >>); }
 #else
 m1(out) { cout << forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//softmod for interactive
 m1(debug) { cerr << forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
-m1(in) { cin >> forward<T>(a); m2(cin >>); }
+m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+	int n;string s;in(n,s);
+
 }
 int main(){
 	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
