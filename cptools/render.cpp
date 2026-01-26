@@ -39,30 +39,39 @@ int main() {
                 std::string param_str;
                 while (std::cin.peek() != EOF) {
                     char next = std::cin.peek();
-                    if ((next >= '0' && next <= '9') || next == ';') {
+                    if ((next >= '0' && next <= '9') || next == ';' || next == ':') {
                         std::cin.get(c); param_str += c;
                     } else break;
                 }
                 std::cin.get(c); // cmd
                 char cmd = c;
 
-                int num = param_str.empty() ? 1 : std::stoi(param_str);
+                int num = 1;
+                if (!param_str.empty()) {
+                    try { num = std::stoi(param_str); } catch(...) { num = 1; }
+                }
 
                 if (cmd == 'A') state.y = std::max(0, state.y - num);
                 else if (cmd == 'B') state.y += num;
                 else if (cmd == 'C') state.x += num;
                 else if (cmd == 'D') state.x = std::max(0, state.x - num);
-                
-                // --- THE FIX: Handle 'G' (Absolute Column) ---
-                else if (cmd == 'G') state.x = std::max(0, num - 1); 
-                
+                else if (cmd == 'G') state.x = std::max(0, num - 1);
                 else if (cmd == 'H' || cmd == 'f') { state.y = 0; state.x = 0; }
                 else if (cmd == 's') { state.saved_x = state.x; state.saved_y = state.y; }
                 else if (cmd == 'u') { state.x = state.saved_x; state.y = state.saved_y; }
+                
+                // --- THE FIX: Append styles, don't overwrite ---
                 else if (cmd == 'm') {
-                     if (param_str.empty()) param_str = "0";
-                     state.current_color = "\033[" + param_str + "m";
+                     // If empty or "0", it's a reset. Clear the string.
+                     if (param_str.empty() || param_str == "0") {
+                         state.current_color = ""; 
+                     } else {
+                         // Otherwise, append this code to the existing active codes
+                         // e.g. "Bold" + "Yellow" -> "\e[1m\e[33m"
+                         state.current_color += "\033[" + param_str + "m";
+                     }
                 }
+                
                 else if (cmd == 'K') {
                     ensure_size(state.y, state.x);
                     if (state.y < grid.size()) {
@@ -81,7 +90,20 @@ int main() {
     for (const auto& row : grid) {
         std::string last_color = "";
         for (const auto& cell : row) {
-            if (cell.color != last_color) { std::cout << cell.color; last_color = cell.color; }
+            // Optimization: Only output color code if it changed from the previous cell
+            if (cell.color != last_color) { 
+                // Note: If we switched from "Bold Red" to just "Red", we technically need a reset first
+                // But a simple state dump works for most simple fetches.
+                // A perfect renderer would calculate the diff, but sending \e[0m then the new color is safest.
+                if (cell.color.empty()) {
+                    std::cout << "\033[0m";
+                } else {
+                    // Reset first to ensure we don't bleed attributes (like Bold) incorrectly
+                    // then apply the full accumulated stack for this cell.
+                    std::cout << "\033[0m" << cell.color;
+                }
+                last_color = cell.color;
+            }
             std::cout << cell.content;
         }
         std::cout << "\033[0m" << std::endl;
