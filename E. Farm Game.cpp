@@ -12,12 +12,12 @@ static mt19937_64 PIDRNG(PIDRNDP);
 static const uint64_t PIDRND = PIDRNG();
 static const uint64_t FIXED_RANDOM = CHRONO_RANDOM ^ PIDRND;
 struct CHASH {
-    template <typename T> size_t operator()(const T& x) const {
-        return hash<T>{}(x) ^ FIXED_RANDOM;
-    }
-    template <typename T1, typename T2> size_t operator()(const pair<T1, T2>& x) const {
-        return (*this)(x.first) ^ ((*this)(x.second) + 0x9e3779b9 + (x.first << 6) + (x.first >> 2));
-    }
+  template <typename T> size_t operator()(const T& x) const {
+    return hash<T>{}(x) ^ FIXED_RANDOM;
+  }
+  template <typename T1, typename T2> size_t operator()(const pair<T1, T2>& x) const {
+    return (*this)(x.first) ^ ((*this)(x.second) + 0x9e3779b9 + (x.first << 6) + (x.first >> 2));
+  }
 };
 template<class T, class U> istream& operator>>(istream& i, pair<T, U>& p) { return i >> p.first >> p.second; }
 template<class T, class U> ostream& operator<<(ostream& o, const pair<T, U>& p) { return o << p.first << " " << p.second; }
@@ -31,11 +31,11 @@ using graph=matrix<int>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
 template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
-	if constexpr(sizeof...(args) == 0){
-		return vector<TM>(first, Val);
-	} else {
-		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
-	}
+  if constexpr(sizeof...(args) == 0){
+    return vector<TM>(first, Val);
+  } else {
+    return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
+  }
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
@@ -47,30 +47,83 @@ template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, A
 #define FILENAME "pname"
 #endif
 #if INTERACTIVE
-m1(out) { cout << std::forward<T>(a);  m2(cout << " " <<); cout << endl; }//softmod for interactive
-m1(debug) { cerr << std::forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
+m1(out) { cout << std::forward<T>(a); m2(cout << " " <<); cout << endl; }//softmod for interactive
+m1(debug) { cerr << std::forward<T>(a); m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #else
-m1(out) { cout << std::forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//softmod for interactive
-m1(debug) { cerr << std::forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
+m1(out) { cout << std::forward<T>(a); m2(cout << " " <<); cout << "\n"; }//softmod for interactive
+m1(debug) { cerr << std::forward<T>(a); m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+    ll MOD = 998244353;
+    int MAXL = 1000005;
+    static vector<ll> fact;
+    static vector<ll> invFact;
+
+    function<ll(ll, ll)> power = [&](ll base, ll exp) -> ll {
+        ll res = 1;
+        base %= MOD;
+        while (exp > 0) {
+            if (exp % 2 == 1) res = (res * base) % MOD;
+            base = (base * base) % MOD;
+            exp /= 2;
+        }
+        return res;
+    };
+
+    if (fact.empty()) {
+        fact = vector<ll>(MAXL);
+        invFact = vector<ll>(MAXL);
+        fact[0] = 1;
+        fOrn(i, 1, MAXL) {
+            fact[i] = (fact[i - 1] * i) % MOD;
+        }
+        invFact[MAXL - 1] = power(fact[MAXL - 1], MOD - 2);
+        f0rn(i, MAXL - 2, -1) {
+            invFact[i] = (invFact[i + 1] * (i + 1)) % MOD;
+        }
+    }
+
+    function<ll(int, int)> nCr = [&](int n, int r) -> ll {
+        if (r < 0 || r > n) return 0;
+        return (((fact[n] * invFact[r]) % MOD) * invFact[n - r]) % MOD;
+    };
+
+    int l, n;
+    in(l, n);
+
+    if (2 * n > l) {
+        out(0);
+        return;
+    }
+
+    ll total = (2 * nCr(l, 2 * n)) % MOD;
+    int M = l - 2 * n;
+    ll losing_configs = 0;
+
+    for (int s = 0; s <= M; s += 2) {
+        ll ways_to_form_gaps = nCr(s / 2 + n - 1, n - 1);
+        ll ways_to_distribute_remaining = nCr(M - s + n, n);
+        ll combinations = (ways_to_form_gaps * ways_to_distribute_remaining) % MOD;
+        losing_configs = (losing_configs + combinations) % MOD;
+    }
+
+    losing_configs = (losing_configs * 2) % MOD;
+    ll ans = (total - losing_configs + MOD) % MOD;
+    out(ans);
 }
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+  if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
+  #ifndef LOCAL_JUDGE
+  #if FILEMODE
+  freopen(FILENAME".in","r",stdin);
+  freopen(FILENAME".out","w",stdout);
+  #endif
+  #endif
+  int t=1;
+  if (MULTITEST) cin>>t;
+  forn(i,t)solve();
 }
-
-
