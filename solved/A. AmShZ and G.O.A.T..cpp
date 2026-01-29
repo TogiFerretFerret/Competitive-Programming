@@ -31,11 +31,11 @@ using graph=matrix<int>;
 template<typename TM> using tensor=vector<matrix<TM>>;
 template<typename TM> using hypermatrix=vector<tensor<TM>>;
 template<typename TM, TM Val = TM(), typename... Args> auto make(size_t first, Args... args){
-	if constexpr(sizeof...(args) == 0){
-		return vector<TM>(first, Val);
-	} else {
-		return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
-	}
+    if constexpr(sizeof...(args) == 0){
+        return vector<TM>(first, Val);
+    } else {
+        return vector<decltype(make<TM, Val>(args...))>(first, make<TM, Val>(args...));
+    }
 }
 #define all(x) (x).begin(),(x).end()
 #define forn(i,n) for(int i=0;i<(n);++i)
@@ -55,22 +55,56 @@ m1(out) { cout << std::forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//soft
 m1(debug) { cerr << std::forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
 void solve(){
-	
+    int n;
+    in(n);
+    vector<int> a(n);
+    in(a);
+    vector<int> U;
+    vector<int> counts;
+    for (int x : a) {
+        if (U.empty() || U.back() != x) {
+            U.pb(x);
+            counts.pb(1);
+        } else {
+            counts.back()++;
+        }
+    }
+    int m = (int)U.size();
+    int max_keep = 0;
+    forn(i, m) {
+        ll base = U[i];
+        int current_len = counts[i];
+        int last_idx = i;
+        ll last_val = base;
+        while (true) {
+            ll req = 2 * last_val - base;
+            if (last_idx + 1 >= m) break;
+            int idx = (int)(lower_bound(U.begin() + last_idx + 1, U.end(), req) - U.begin());
+            if (idx == m) {
+                break;
+            }
+            current_len++;
+            last_idx = idx;
+            last_val = U[last_idx];
+        }
+        if (current_len > max_keep) {
+            max_keep = current_len;
+        }
+    }
+    out(n - max_keep);
 }
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
+    #ifndef LOCAL_JUDGE
+    #if FILEMODE
+    freopen(FILENAME".in","r",stdin);
+    freopen(FILENAME".out","w",stdout);
+    #endif
+    #endif
+    int t=1;
+    if (MULTITEST) cin>>t;
+    forn(i,t)solve();
 }
-
-
