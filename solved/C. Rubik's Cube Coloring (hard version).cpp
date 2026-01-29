@@ -60,32 +60,13 @@ m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 void solve(){
     ll K, N;
     in(K, N);
-    
-    hashmap<ll, int> fixed_colors;
-    hashmap<ll, int> important_nodes;
+
+    hashmap<ll, int> constraints;
+    hashmap<ll, int> important;
+    vector<ll> G(65);
+    // Create 6x0 matrix for adjacency
+    matrix<int> adj = make<int>(6, 0); 
     ll MOD = 1e9 + 7;
-
-    function<int(string)> getColorID = [&](string s) -> int {
-        if (s == "white") return 0;
-        if (s == "yellow") return 1;
-        if (s == "green") return 2;
-        if (s == "blue") return 3;
-        if (s == "red") return 4;
-        if (s == "orange") return 5;
-        return -1;
-    };
-
-    forn(i, N) {
-        ll v;
-        string s;
-        in(v, s);
-        fixed_colors[v] = getColorID(s);
-        ll temp = v;
-        while (temp >= 1) {
-            important_nodes[temp] = 1;
-            temp /= 2;
-        }
-    }
 
     function<ll(ll, ll)> power = [&](ll base, ll exp) -> ll {
         ll res = 1;
@@ -98,75 +79,120 @@ void solve(){
         return res;
     };
 
-    function<ll(int)> get_free_ways = [&](int h) -> ll {
-        if (h == 0) return 1;
-        ll exp_mod = MOD - 1;
-        ll p2 = 1;
-        ll b = 2;
-        int e = h;
-        while(e > 0) {
-            if(e % 2) p2 = (p2 * b) % exp_mod;
-            b = (b * b) % exp_mod;
-            e /= 2;
-        }
-        ll exponent = (p2 - 1 + exp_mod) % exp_mod;
-        return power(4, exponent);
+    function<int(string)> get_color_code = [&](string s) -> int {
+        if (s == "white") return 0;
+        if (s == "yellow") return 1;
+        if (s == "green") return 2;
+        if (s == "blue") return 3;
+        if (s == "red") return 4;
+        if (s == "orange") return 5;
+        return -1;
     };
 
-    function<vector<int>(int)> get_neighbors = [&](int c) -> vector<int> {
-        vector<int> v;
-        int opp = c ^ 1;
+    function<void()> init_adj = [&]() -> void {
         forn(i, 6) {
-            if (i != c && i != opp) v.pb(i);
+            forn(j, 6) {
+                if (i != j && i != (j ^ 1)) {
+                    adj[i].pb(j);
+                }
+            }
         }
-        return v;
     };
 
-    function<ll(ll, int, int)> dfs;
-    dfs = [&](ll u, int p_color, int height) -> ll {
-        ll ways = 0;
-        vector<int> candidates;
-        
-        if (fixed_colors.count(u)) {
-            int fc = fixed_colors[u];
-            if (p_color != -1) {
-                int opp = p_color ^ 1;
-                if (fc == p_color || fc == opp) return 0;
+    function<void()> init_G = [&]() -> void {
+        ll mod_phi = MOD - 1;
+        vector<ll> pow2(65);
+        pow2[0] = 1;
+        for(int i = 1; i <= 64; ++i) {
+            pow2[i] = (pow2[i-1] * 2) % mod_phi;
+        }
+        for(int h = 0; h <= 60; ++h) {
+            ll exponent = (pow2[h] - 1 + mod_phi) % mod_phi;
+            G[h] = power(4, exponent);
+        }
+    };
+
+    forn(i, N) {
+        ll v;
+        string s;
+        in(v, s);
+        constraints[v] = get_color_code(s);
+        ll temp = v;
+        while (temp >= 1) {
+            important[temp] = 1;
+            temp /= 2;
+        }
+    }
+
+    init_adj();
+    init_G();
+
+    if (N == 0) important[1] = 1;
+
+    function<vector<ll>(ll, int)> dfs;
+    dfs = [&](ll u, int h) -> vector<ll> {
+        int fixed_c = -1;
+        if (constraints.count(u)) fixed_c = constraints[u];
+
+        bool left_imp = false, right_imp = false;
+        ll left_u = u << 1;
+        ll right_u = (u << 1) + 1;
+
+        vector<ll> left_res, right_res;
+
+        if (h > 1) {
+            if (important.count(left_u)) {
+                left_imp = true;
+                left_res = dfs(left_u, h - 1);
             }
-            candidates.pb(fc);
-        } else {
-            if (p_color == -1) {
-                forn(i, 6) candidates.pb(i);
+            if (important.count(right_u)) {
+                right_imp = true;
+                right_res = dfs(right_u, h - 1);
+            }
+        }
+
+        vector<ll> res(6, 0);
+
+        forn(c, 6) {
+            if (fixed_c != -1 && c != fixed_c) {
+                res[c] = 0;
+                continue;
+            }
+
+            if (h == 1) {
+                res[c] = 1;
+                continue;
+            }
+
+            ll left_val = 0;
+            if (!left_imp) {
+                left_val = G[h-1];
             } else {
-                candidates = get_neighbors(p_color);
-            }
-        }
-        
-        for (int c : candidates) {
-            ll current_ways = 1;
-            if (height > 1) {
-                ll left_child = u << 1;
-                ll right_child = (u << 1) + 1;
-                int child_height = height - 1;
-                
-                if (important_nodes.count(left_child)) {
-                    current_ways = (current_ways * dfs(left_child, c, child_height)) % MOD;
-                } else {
-                    current_ways = (current_ways * get_free_ways(child_height)) % MOD;
-                }
-                
-                if (important_nodes.count(right_child)) {
-                    current_ways = (current_ways * dfs(right_child, c, child_height)) % MOD;
-                } else {
-                    current_ways = (current_ways * get_free_ways(child_height)) % MOD;
+                for(int neighbor : adj[c]) {
+                    left_val = (left_val + left_res[neighbor]) % MOD;
                 }
             }
-            ways = (ways + current_ways) % MOD;
+
+            ll right_val = 0;
+            if (!right_imp) {
+                right_val = G[h-1];
+            } else {
+                for(int neighbor : adj[c]) {
+                    right_val = (right_val + right_res[neighbor]) % MOD;
+                }
+            }
+
+            res[c] = (left_val * right_val) % MOD;
         }
-        return ways;
+        return res;
     };
 
-    out(dfs(1, -1, K));
+    vector<ll> root_res = dfs(1, K);
+    ll total_ways = 0;
+    for(ll w : root_res) {
+        total_ways = (total_ways + w) % MOD;
+    }
+    out(total_ways);
 }
 int main(){
     if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
