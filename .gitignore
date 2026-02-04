@@ -2,6 +2,7 @@ testcases/
 compiled/
 .swp
 sol.cpp
+ans.cpp
 operation
 zzx.py
 depthink.py
