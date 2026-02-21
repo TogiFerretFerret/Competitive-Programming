@@ -1,8 +1,8 @@
-// Problem: E. One-X
+// Problem: E. I Wanna be the Team Leader
 // Judge: Codeforces
-// URL: https://codeforces.com/problemset/problem/1905/E
+// URL: https://codeforces.com/problemset/problem/1886/E
 // Memory Limit: 512 MB
-// Time Limit: 3000 ms
+// Time Limit: 2000 ms
 #include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
@@ -57,20 +57,63 @@ m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #endif
 #define MULTITEST false
 #define pb push_back
-void solve(){
-	
+void solve() {
+    int n, m; in(n, m);
+    vector<pair<ll, int>> a(n + 1);
+    fOrn(i, 1, n + 1) { in(a[i].first); a[i].second = i; }
+    
+    function<bool(const pair<ll, int>&, const pair<ll, int>&)> comp = [&](const pair<ll, int>& x, const pair<ll, int>& y) -> bool { return x.first > y.first; };
+    sort(a.begin() + 1, a.end(), comp);
+    vector<ll> b(m); in(b);
+    
+    matrix<int> nxt = make<int, 1000000000>(m, n + 2);
+    forn(p, m) {
+        int cur_i = 1;
+        fOrn(j, 1, n + 1) {
+            ll req = (b[p] + a[j].first - 1) / a[j].first;
+            int max_idx = j - req + 1;
+            while (cur_i <= max_idx) nxt[p][cur_i++] = j;
+        }
+    }
+    
+    vector<int> dp(1 << m, 1000000000);
+    vector<pair<int, int>> parent(1 << m, {-1, -1});
+    dp[0] = 0;
+    
+    forn(mask, 1 << m) {
+        if (dp[mask] > n) continue;
+        forn(p, m) {
+            if (!(mask & (1 << p))) {
+                int next_mask = mask | (1 << p);
+                int end = nxt[p][dp[mask] + 1];
+                if (end <= n && end < dp[next_mask]) {
+                    dp[next_mask] = end;
+                    parent[next_mask] = {p, dp[mask] + 1};
+                }
+            }
+        }
+    }
+    
+    if (dp[(1 << m) - 1] > n) { out("NO"); return; }
+    out("YES");
+    
+    int mask = (1 << m) - 1;
+    matrix<int> ans(m);
+    while (mask > 0) {
+        int p = parent[mask].first;
+        int start = parent[mask].second;
+        int end = dp[mask];
+        fOrn(i, start, end + 1) ans[p].pb(a[i].second);
+        mask ^= (1 << p);
+    }
+    forn(i, m) {
+        cout << ans[i].size();
+        for (int x : ans[i]) cout << " " << x;
+        cout << "\n";
+    }
 }
+
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE) cin.tie(0)->sync_with_stdio(0);
+    int t=1; if (MULTITEST) cin>>t; forn(i,t) solve();
 }
-
-

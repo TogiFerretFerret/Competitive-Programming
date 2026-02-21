@@ -1,6 +1,6 @@
-// Problem: E. Infinite Card Game
+// Problem: E. One-X
 // Judge: Codeforces
-// URL: https://codeforces.com/problemset/problem/1895/E
+// URL: https://codeforces.com/problemset/problem/1905/E
 // Memory Limit: 512 MB
 // Time Limit: 3000 ms
 #include <bits/stdc++.h>
@@ -55,22 +55,42 @@ m1(out) { cout << std::forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//soft
 m1(debug) { cerr << std::forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
-void solve(){
-	
+
+void solve() {
+    ll n; in(n);
+    hashmap<ll, pair<ll, ll>> memo;
+    ll mod = 998244353;
+    
+    function<ll(ll, ll)> power = [&](ll base, ll exp) -> ll {
+        ll res = 1; base %= mod;
+        while (exp > 0) {
+            if (exp % 2 == 1) res = (res * base) % mod;
+            base = (base * base) % mod; exp /= 2;
+        }
+        return res;
+    };
+    
+    function<pair<ll, ll>(ll)> solve_len = [&](ll x) -> pair<ll, ll> {
+        if (x == 1) return {1, 0};
+        if (memo.count(x)) return memo[x];
+        ll left = (x + 1) / 2, right = x / 2;
+        pair<ll, ll> L = solve_len(left), R = solve_len(right);
+        
+        ll pL = (power(2, left) - 1 + mod) % mod;
+        ll pR = (power(2, right) - 1 + mod) % mod;
+        
+        ll c1 = (pL * pR % mod + 2LL * L.first + 2LL * R.first) % mod;
+        ll c2 = (L.second + R.first + R.second) % mod;
+        return memo[x] = {c1, c2};
+    };
+    
+    pair<ll, ll> res = solve_len(n);
+    out((res.first + res.second) % mod);
 }
+
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE) cin.tie(0)->sync_with_stdio(0);
+    int t=1; if (MULTITEST) cin>>t; forn(i,t) solve();
 }
-
-

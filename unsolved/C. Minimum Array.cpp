@@ -55,22 +55,58 @@ m1(out) { cout << std::forward<T>(a);  m2(cout << " " <<); cout << "\n"; }//soft
 m1(debug) { cerr << std::forward<T>(a);  m2(cerr << " " <<); cerr << "\n"; }
 m1(in) { cin >> std::forward<T>(a); m2(cin >>); }
 #endif
-#define MULTITEST false
+#define MULTITEST true
 #define pb push_back
-void solve(){
-	
+
+void solve() {
+    int n; in(n);
+    vector<ll> a(n + 1);
+    fOrn(i, 1, n + 1) in(a[i]);
+    int q; in(q);
+    
+    vector<ll> E(n + 2, 0);
+    set<int> nz;
+    
+    function<void(int, ll)> add_E = [&](int idx, ll val) -> void {
+        if (idx > n) return;
+        if (E[idx] != 0) nz.erase(idx);
+        E[idx] += val;
+        if (E[idx] != 0) nz.insert(idx);
+    };
+    
+    int best = 0;
+    vector<tuple<int, int, ll>> ops(q + 1);
+    fOrn(j, 1, q + 1) {
+        int l, r; ll x; in(l, r, x);
+        ops[j] = {l, r, x};
+        add_E(l, x); add_E(r + 1, -x);
+        
+        if (!nz.empty()) {
+            int first_diff = *nz.begin();
+            if (E[first_diff] < 0) {
+                best = j;
+                vector<int> to_clear(nz.begin(), nz.end());
+                for (int idx : to_clear) { E[idx] = 0; nz.erase(idx); }
+            }
+        }
+    }
+    
+    vector<ll> diff(n + 2, 0);
+    fOrn(j, 1, best + 1) {
+        auto [l, r, x] = ops[j];
+        diff[l] += x; diff[r + 1] -= x;
+    }
+    
+    ll cur = 0;
+    fOrn(i, 1, n + 1) {
+        cur += diff[i];
+        a[i] += cur;
+    }
+    vector<ll> res(a.begin() + 1, a.end());
+    out(res);
 }
+
 int main(){
-	if(!INTERACTIVE)cin.tie(0)->sync_with_stdio(0);
-	#ifndef LOCAL_JUDGE
-	#if FILEMODE
-	freopen(FILENAME".in","r",stdin);
-	freopen(FILENAME".out","w",stdout);
-	#endif
-	#endif
-	int t=1;
-	if (MULTITEST) cin>>t;
-	forn(i,t)solve();
+    if(!INTERACTIVE) cin.tie(0)->sync_with_stdio(0);
+    int t=1; if (MULTITEST) cin>>t; forn(i,t) solve();
 }
-
-
